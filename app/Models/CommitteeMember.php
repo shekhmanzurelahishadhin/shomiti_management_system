@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class CommitteeMember extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'committee_id', 'member_id', 'contribution_type',
+        'draw_order', 'joined_at',
+    ];
+
+    protected $casts = [
+        'joined_at' => 'date',
+    ];
+
+    public function committee()
+    {
+        return $this->belongsTo(Committee::class);
+    }
+
+    public function member()
+    {
+        return $this->belongsTo(Member::class);
+    }
+}
