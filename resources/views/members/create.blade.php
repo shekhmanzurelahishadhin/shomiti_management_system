@@ -262,7 +262,7 @@
       <label class="form-label fw-semibold">মাসিক চাঁদা (৳) <span class="text-danger">*</span></label>
       <input type="number" name="monthly_deposit" step="0.01" min="0"
              class="form-control @error('monthly_deposit') is-invalid @enderror"
-             value="{{ old('monthly_deposit', 500) }}" required>
+             value="{{ old('monthly_deposit', 1000) }}" required>
       <div class="form-text">জমার সময়সীমা: প্রতি মাসের ৫-১৫ তারিখ</div>
       @error('monthly_deposit')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>

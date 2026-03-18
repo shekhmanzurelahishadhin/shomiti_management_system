@@ -53,7 +53,7 @@ return new class extends Migration
             $table->date('join_date');
             $table->decimal('entry_fee', 10, 2)->default(100.00);
             $table->unsignedTinyInteger('share_count')->default(1); // max 2
-            $table->decimal('monthly_deposit', 10, 2)->default(500.00);
+            $table->decimal('monthly_deposit', 10, 2)->default(1000.00);
             $table->unsignedBigInteger('referred_by_member_id')->nullable();
             $table->enum('status', ['active', 'inactive', 'suspended', 'on_hold', 'disconnected'])->default('active');
 
