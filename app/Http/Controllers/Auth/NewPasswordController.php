@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
+
 class NewPasswordController extends Controller
 {
     public function create(Request $request): View

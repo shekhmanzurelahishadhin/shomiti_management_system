@@ -15,12 +15,26 @@
   .status-paid { background: #d1e7dd; color: #0a3622; }
   .footer { margin-top: 30px; text-align: center; color: #aaa; font-size: 11px; border-top: 1px solid #eee; padding-top: 10px; }
   .receipt-box { border: 2px dashed #ccc; padding: 20px; max-width: 500px; margin: 0 auto; }
+  @font-face {
+    font-family: 'SolaimanLipi';
+    src: url('{{ public_path('fonts/SolaimanLipi.ttf') }}') format('truetype');
+    font-weight: normal;
+}
+@font-face {
+    font-family: 'SolaimanLipi';
+    src: url('{{ public_path('fonts/SolaimanLipi_Bold.ttf') }}') format('truetype');
+    font-weight: bold;
+}
+
+body {
+    font-family: 'SolaimanLipi', sans-serif;
+}
 </style>
 </head>
 <body>
 <div class="receipt-box">
   <div class="center">
-    <div class="title">নবদিগন্ত সমবায় সমিতি</div>
+    <div style="text-align:center;margin-bottom:4px"><img src="{{ public_path('images/logo.jpg') }}" style="width:45px;height:45px;object-fit:contain"></div><div class="title">নবদিগন্ত সমবায় সমিতি</div>
     <div style="color:#555">Nabadiganta Somobai Somiti</div>
     <div style="color:#888;font-size:12px">{{ \App\Models\Setting::get('somity_address') }}</div>
     <hr style="border:1px solid #eee;margin:10px 0">
@@ -63,3 +77,4 @@
 </div>
 </body>
 </html>
+

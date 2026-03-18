@@ -474,7 +474,7 @@ class Stringable implements JsonSerializable, ArrayAccess, BaseStringable
      */
     public function limit($limit = 100, $end = '...', $preserveWords = false)
     {
-        return new static(Str::limit($this->value, $limit, $end, $preserveWords));
+        return new static( \Illuminate\Support\Str::limit($this->value, $limit, $end, $preserveWords));
     }
 
     /**
@@ -889,6 +889,16 @@ class Stringable implements JsonSerializable, ArrayAccess, BaseStringable
     public function headline()
     {
         return new static(Str::headline($this->value));
+    }
+
+    /**
+     * Convert the given string to only its initials.
+     *
+     * @return static
+     */
+    public function initials()
+    {
+        return new static(Str::initials($this->value));
     }
 
     /**

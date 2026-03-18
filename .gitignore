@@ -1,4 +1,4 @@
-# Laravel specific
+# Laravel & Framework
 /vendor/
 /node_modules/
 /public/hot
@@ -10,33 +10,23 @@
 /storage/framework/sessions/**
 /storage/framework/views/**
 /storage/logs/**
-/.env
-/.env.*
-!.env.example
-/.phpunit.result.cache
- Homestead.json
- Homestead.yaml
-/.vagrant
-/.idea
-/.vscode
-npm-debug.log
-yarn-error.log
-/.fleet
-/.php-cs-fixer.cache
+/bootstrap/cache/*
+!bootstrap/cache/.gitkeep
 
-# Composer
-/composer.lock
-/vendor/
+# Environment files
+.env
+.env.*         # ignore all env variants
+!.env.example  # keep example file
 
-# PHPUnit
-/phpunit.xml
+# IDEs & editors
+/.idea/
+/.vscode/
+/*.sublime-*
+/nbproject/
+/.project/
+/.classpath
 
-# IDE helper files
-/_ide_helper.php
-/_ide_helper_models.php
-/.phpstorm.meta.php
-
-# OS generated files
+# OS & system files
 .DS_Store
 .DS_Store?
 ._*
@@ -49,72 +39,37 @@ Thumbs.db
 *~
 ~*
 
-# Docker
-/docker-compose.override.yml
-/docker/data/
-/docker/logs/
+# Composer
+/composer.lock
 
-# Testing
-/coverage
-/phpunit.coverage.xml
-/.phpunit.result.cache
-/tests/_output/*
-/tests/_support/_generated/*
-
-# Assets
+# NPM / Yarn
+package-lock.json
+yarn.lock
 /public/css/app.css
 /public/js/app.js
 /public/mix-manifest.json
+/public/build/
+/public/assets/
 /public/fonts/*
 /public/vendor/*
 
-# Laravel Telescope
+# Laravel Telescope & Horizon
 /storage/telescope/*
 !storage/telescope/.gitkeep
-
-# Laravel Horizon
 /storage/horizon-*.log
 
-# Laravel Nova
+# Laravel Nova & Spark
 /nova
-
-# Laravel Spark
 /spark
 
-# Backup files
+# Temporary / Backup
 *.bak
 *.backup
 *.orig
-
-# Environment files
-.env
-.env.production
-.env.local
-.env.staging
-.env.testing
-.env.development
-
-# IDE directories
-.idea/
-.vscode/
-*.sublime-*
-.netbeans/
-nbproject/
-.project/
-.classpath
-
-# Logs
-*.log
-storage/logs/*
-!storage/logs/.gitkeep
-
-# Cache
-storage/framework/cache/*
-!storage/framework/cache/.gitkeep
-storage/framework/sessions/*
-!storage/framework/sessions/.gitkeep
-storage/framework/views/*
-!storage/framework/views/.gitkeep
+tmp/
+temp/
+*.tmp
+*.temp
 
 # Database
 *.sqlite
@@ -123,94 +78,6 @@ storage/framework/views/*
 storage/*.sqlite
 storage/*.sqlite3
 storage/*.db
-
-# Bootstrap cache
-bootstrap/cache/*
-!bootstrap/cache/.gitkeep
-
-# Public assets
-public/assets/
-public/build/
-public/storage
-public/uploads/*
-!public/uploads/.gitkeep
-
-# User uploaded files
-storage/app/public/*
-!storage/app/public/.gitkeep
-
-# PHP Error log
-php_error.log
-
-# npm
-node_modules/
-package-lock.json
-yarn.lock
-
-# Browserslist
-.browserslistrc
-
-# Laravel Mix
-mix-manifest.json
-public/mix-manifest.json
-public/css/
-public/js/
-public/fonts/
-
-# Vite
-/public/build/
-/.vite/
-
-# PHP CS Fixer
-.php_cs
-.php_cs.cache
-.php-cs-fixer.php
-.php-cs-fixer.cache
-
-# PHPStan
-phpstan.neon
-phpstan.neon.dist
-.phpstan.result.cache
-
-# Laravel Sail
-/sail
-/docker-compose.yml
-/docker-compose.*.yml
-!docker-compose.yml.example
-
-# Laravel Breeze / Jetstream
-public/frontend/
-public/vendor/
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-*.temp
-
-# Test reports
-tests/report/
-tests/_output/
-tests/_support/_generated/
-
-# Code Coverage
-coverage/
-.clover
-.crafter
-.crafter.json
-.phpdoc/
-.phpdoc.xml
-.phpdoc.xml.dist
-.sass-cache/
-
-# Vagrant
-/.vagrant/
-/Vagrantfile
-
-# Heroku
-/.heroku/
-
-# MySQL
 *.ibd
 *.frm
 *.MYD
@@ -219,9 +86,59 @@ coverage/
 *.myi
 *.sdi
 
+# Logs & Reports
+php_error.log
+/tests/_output/*
+tests/report/
+/tests/_support/_generated/*
+
+# PHPUnit
+.phpunit.result.cache
+/phpunit.xml
+/phpunit.coverage.xml
+
+# Code quality tools
+.php_cs
+.php_cs.cache
+.php-cs-fixer.php
+.php-cs-fixer.cache
+.phpstan.result.cache
+phpstan.neon
+phpstan.neon.dist
+
+# Frontend build tools
+/.vite/
+/public/frontend/
+
+# Docker & Sail
+/docker-compose.override.yml
+/docker/data/
+/docker/logs/
+/sail
+/docker-compose.yml
+/docker-compose.*.yml
+!docker-compose.yml.example
+
 # SSL certificates
 *.crt
 *.key
 *.pem
 *.p12
 *.csr
+
+# Misc
+.clover
+.crafter
+.crafter.json
+.phpdoc/
+.phpdoc.xml
+.phpdoc.xml.dist
+.sass-cache/
+
+# Keep empty folders
+!storage/framework/cache/.gitkeep
+!storage/framework/sessions/.gitkeep
+!storage/framework/views/.gitkeep
+!storage/app/public/.gitkeep
+!bootstrap/cache/.gitkeep
+!public/uploads/.gitkeep

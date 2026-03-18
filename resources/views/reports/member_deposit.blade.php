@@ -25,7 +25,7 @@
         </select>
       </div>
       <div class="col-md-2">
-        <button class="btn btn-primary btn-sm w-100"><i class="bi bi-search me-1"></i>View</button>
+        <button class="btn btn-primary btn-sm w-100"><i class="bi bi-search me-1"></i>দেখুন</button>
       </div>
       @if($member)
       <div class="col-md-2">

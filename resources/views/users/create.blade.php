@@ -55,6 +55,18 @@
                 <option value="inactive">Inactive</option>
               </select>
             </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">লিঙ্ক করুন সদস্য প্রোফাইল</label>
+              <select name="member_id" class="form-select">
+                <option value="">— কোনো সদস্য লিঙ্ক নেই (Admin/Treasurer) —</option>
+                @foreach($members as $m)
+                  <option value="{{ $m->id }}" {{ old('member_id')==$m->id?'selected':'' }}>
+                    {{ $m->name }} ({{ $m->member_id }})
+                  </option>
+                @endforeach
+              </select>
+              <div class="form-text">Member রোলের জন্য তাদের সদস্য প্রোফাইল লিঙ্ক করুন যাতে তারা শুধু নিজের তথ্য দেখতে পান।</div>
+            </div>
           </div>
           <hr class="mt-4">
           <div class="d-flex gap-2 justify-content-end">

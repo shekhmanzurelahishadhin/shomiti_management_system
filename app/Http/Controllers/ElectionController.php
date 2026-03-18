@@ -13,25 +13,23 @@ use Illuminate\Http\Request;
 
 class ElectionController extends Controller
 {
-    /* ─── List all elections ─── */
     public function index()
     {
-        $elections = Election::withCount(['candidates','votes','positions'])
-                             ->latest()->paginate(10);
+        $elections = Election::withCount(['candidates','votes','positions'])->latest()->paginate(10);
         return view('elections.index', compact('elections'));
     }
 
-    /* ─── Create election form ─── */
     public function create()
     {
+        $this->authorizeAdmin();
         $positions = ['সভাপতি','সহ-সভাপতি','সাধারণ সম্পাদক','সহ-সাধারণ সম্পাদক',
                       'কোষাধ্যক্ষ','দপ্তর সম্পাদক','সদস্য'];
         return view('elections.create', compact('positions'));
     }
 
-    /* ─── Store new election ─── */
     public function store(Request $request)
     {
+        $this->authorizeAdmin();
         $data = $request->validate([
             'title'            => 'required|string|max:255',
             'description'      => 'nullable|string',
@@ -55,40 +53,48 @@ class ElectionController extends Controller
             ]);
         }
 
-        ActivityLog::log('create', "নির্বাচন তৈরি: {$election->title} ({$election->election_year})", $election);
-        return redirect()->route('elections.show', $election)
-                         ->with('success', 'নির্বাচন সফলভাবে তৈরি হয়েছে।');
+        ActivityLog::log('create', "নির্বাচন তৈরি: {$election->title}", $election);
+        return redirect()->route('elections.show', $election)->with('success', 'নির্বাচন তৈরি হয়েছে।');
     }
 
-    /* ─── Show election detail ─── */
     public function show(Election $election)
     {
         $election->load(['positions.candidates.member','results.member','results.position']);
         $activeMembers = Member::where('status','active')->orderBy('name')->get();
 
-        // For voting: find current auth user's member record (if any)
-        $voterMember = null;
-        if (auth()->user()->hasRole('Member')) {
-            $voterMember = Member::where('phone', auth()->user()->phone)
-                                 ->orWhere('name', auth()->user()->name)
-                                 ->first();
+        // Get current user's linked member record
+        $voterMember = auth()->user()->getLinkedMember();
+
+        // Check if this member has already voted (per position)
+        $votedPositions = [];
+        if ($voterMember) {
+            $votedPositions = ElectionVote::where('election_id', $election->id)
+                                          ->where('voter_member_id', $voterMember->id)
+                                          ->pluck('election_position_id')
+                                          ->toArray();
         }
 
-        return view('elections.show', compact('election','activeMembers','voterMember'));
+        $hasVotedAll = false;
+        if ($voterMember && $election->isVotingOpen()) {
+            $posCount    = $election->positions->count();
+            $hasVotedAll = count($votedPositions) >= $posCount;
+        }
+
+        return view('elections.show', compact('election','activeMembers','voterMember','votedPositions','hasVotedAll'));
     }
 
-    /* ─── Update election status ─── */
     public function updateStatus(Request $request, Election $election)
     {
+        $this->authorizeAdmin();
         $request->validate(['status' => 'required|in:upcoming,nomination,voting,counting,completed,cancelled']);
         $election->update(['status' => $request->status]);
-        ActivityLog::log('update', "নির্বাচনের অবস্থা পরিবর্তন: {$election->title} → {$request->status}", $election);
+        ActivityLog::log('update', "নির্বাচনের অবস্থা: {$election->title} → {$request->status}", $election);
         return back()->with('success', 'নির্বাচনের অবস্থা আপডেট হয়েছে।');
     }
 
-    /* ─── Add candidate ─── */
     public function addCandidate(Request $request, Election $election)
     {
+        $this->authorizeAdmin();
         $data = $request->validate([
             'election_position_id' => 'required|exists:election_positions,id',
             'member_id'            => 'required|exists:members,id',
@@ -97,63 +103,84 @@ class ElectionController extends Controller
         $data['election_id'] = $election->id;
         $data['status']      = 'approved';
 
-        // Prevent duplicate
         $exists = ElectionCandidate::where('election_position_id', $data['election_position_id'])
                                    ->where('member_id', $data['member_id'])->exists();
-        if ($exists) {
-            return back()->with('error', 'এই প্রার্থী এই পদে ইতিমধ্যে মনোনীত আছেন।');
-        }
+        if ($exists) return back()->with('error', 'এই প্রার্থী ইতিমধ্যে মনোনীত আছেন।');
 
         ElectionCandidate::create($data);
-        ActivityLog::log('create', "প্রার্থী যোগ: election #{$election->id}", null);
-        return back()->with('success', 'প্রার্থী সফলভাবে যোগ হয়েছে।');
+        return back()->with('success', 'প্রার্থী যোগ হয়েছে।');
     }
 
-    /* ─── Remove candidate ─── */
     public function removeCandidate(Election $election, ElectionCandidate $candidate)
     {
+        $this->authorizeAdmin();
         $candidate->delete();
         return back()->with('success', 'প্রার্থী বাদ দেওয়া হয়েছে।');
     }
 
-    /* ─── Cast vote ─── */
+    /** Cast vote — uses auth user's linked member record */
     public function castVote(Request $request, Election $election)
     {
         if (!$election->isVotingOpen()) {
             return back()->with('error', 'এই মুহূর্তে ভোটগ্রহণ খোলা নেই।');
         }
 
-        $request->validate([
-            'votes'   => 'required|array',
-            'votes.*' => 'required|exists:election_candidates,id',
-            'voter_member_id' => 'required|exists:members,id',
-        ]);
+        // Get voter from logged-in user's linked member
+        $voterMember = auth()->user()->getLinkedMember();
 
-        $voterId = $request->voter_member_id;
-
-        foreach ($request->votes as $positionId => $candidateId) {
-            // Check already voted for this position
-            $alreadyVoted = ElectionVote::where('election_position_id', $positionId)
-                                        ->where('voter_member_id', $voterId)
-                                        ->exists();
-            if ($alreadyVoted) continue;
-
-            ElectionVote::create([
-                'election_id'            => $election->id,
-                'election_position_id'   => $positionId,
-                'election_candidate_id'  => $candidateId,
-                'voter_member_id'        => $voterId,
-            ]);
+        if (!$voterMember) {
+            return back()->with('error', 'ভোট দিতে হলে আপনার অ্যাকাউন্টের সাথে সদস্য প্রোফাইল লিঙ্ক থাকতে হবে।');
         }
 
-        ActivityLog::log('vote', "ভোট প্রদান: member #{$voterId} — election #{$election->id}", null);
-        return back()->with('success', 'আপনার ভোট সফলভাবে গ্রহণ করা হয়েছে।');
+        if ($voterMember->status !== 'active') {
+            return back()->with('error', 'শুধুমাত্র সক্রিয় সদস্য ভোট দিতে পারবেন।');
+        }
+
+        $request->validate([
+            'votes'   => 'required|array|min:1',
+            'votes.*' => 'required|integer|exists:election_candidates,id',
+        ]);
+
+        $votedCount = 0;
+        $skipped    = 0;
+
+        foreach ($request->votes as $positionId => $candidateId) {
+            // Verify candidate belongs to this election and position
+            $candidateOk = ElectionCandidate::where('id', $candidateId)
+                                            ->where('election_id', $election->id)
+                                            ->where('election_position_id', $positionId)
+                                            ->where('status','approved')
+                                            ->exists();
+            if (!$candidateOk) { $skipped++; continue; }
+
+            // One vote per position per member
+            $alreadyVoted = ElectionVote::where('election_id', $election->id)
+                                        ->where('election_position_id', $positionId)
+                                        ->where('voter_member_id', $voterMember->id)
+                                        ->exists();
+            if ($alreadyVoted) { $skipped++; continue; }
+
+            ElectionVote::create([
+                'election_id'           => $election->id,
+                'election_position_id'  => $positionId,
+                'election_candidate_id' => $candidateId,
+                'voter_member_id'       => $voterMember->id,
+            ]);
+            $votedCount++;
+        }
+
+        ActivityLog::log('vote', "ভোট: {$voterMember->name} — {$election->title} ({$votedCount} পদে)", null);
+
+        if ($votedCount > 0) {
+            return back()->with('success', "আপনার ভোট সফলভাবে গ্রহণ হয়েছে ({$votedCount}টি পদে)।");
+        }
+
+        return back()->with('error', 'আপনি ইতিমধ্যে সব পদে ভোট দিয়েছেন।');
     }
 
-    /* ─── Count votes & publish results ─── */
     public function countVotes(Election $election)
     {
-        // Delete old results
+        $this->authorizeAdmin();
         $election->results()->delete();
 
         foreach ($election->positions as $position) {
@@ -165,12 +192,12 @@ class ElectionController extends Controller
 
             foreach ($candidates as $idx => $candidate) {
                 ElectionResult::create([
-                    'election_id'            => $election->id,
-                    'election_position_id'   => $position->id,
-                    'election_candidate_id'  => $candidate->id,
-                    'member_id'              => $candidate->member_id,
-                    'vote_count'             => $candidate->votes_count,
-                    'is_elected'             => $idx < $position->seats,
+                    'election_id'           => $election->id,
+                    'election_position_id'  => $position->id,
+                    'election_candidate_id' => $candidate->id,
+                    'member_id'             => $candidate->member_id,
+                    'vote_count'            => $candidate->votes_count,
+                    'is_elected'            => $idx < $position->seats,
                 ]);
             }
         }
@@ -180,19 +207,24 @@ class ElectionController extends Controller
         return back()->with('success', 'ভোট গণনা সম্পন্ন। ফলাফল প্রকাশিত হয়েছে।');
     }
 
-    /* ─── Public results page ─── */
     public function results(Election $election)
     {
-        $election->load(['results' => fn($q) => $q->with(['member','position'])->orderBy('election_position_id')->orderByDesc('vote_count')]);
+        $election->load(['results' => fn($q) => $q->with(['member','position'])
+                        ->orderBy('election_position_id')->orderByDesc('vote_count')]);
         $positionResults = $election->results->groupBy('election_position_id');
         return view('elections.results', compact('election','positionResults'));
     }
 
-    /* ─── Delete election ─── */
     public function destroy(Election $election)
     {
+        $this->authorizeAdmin();
         ActivityLog::log('delete', "নির্বাচন মুছে ফেলা: {$election->title}", $election);
         $election->delete();
         return redirect()->route('elections.index')->with('success', 'নির্বাচন মুছে ফেলা হয়েছে।');
+    }
+
+    private function authorizeAdmin(): void
+    {
+        if (!auth()->user()->can('manage committees')) abort(403);
     }
 }

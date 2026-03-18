@@ -61,7 +61,7 @@
           <td>
             <div class="fw-semibold">{{ $e->title }}</div>
             @if($e->description)
-              <small class="text-muted">{{ Str::limit($e->description,50) }}</small>
+              <small class="text-muted">{{  \Illuminate\Support\Str::limit($e->description,50) }}</small>
             @endif
           </td>
           <td><span class="badge bg-light text-dark">{{ ucfirst($e->category) }}</span></td>

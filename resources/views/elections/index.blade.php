@@ -30,7 +30,7 @@
       <div class="card-body">
         <h6 class="fw-bold mb-2">{{ $election->title }}</h6>
         @if($election->description)
-          <p class="text-muted small mb-3">{{ Str::limit($election->description, 80) }}</p>
+          <p class="text-muted small mb-3">{{  \Illuminate\Support\Str::limit($election->description, 80) }}</p>
         @endif
 
         <div class="row g-2 text-center mb-3">

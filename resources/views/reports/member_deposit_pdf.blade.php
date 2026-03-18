@@ -13,7 +13,7 @@
 </style>
 </head>
 <body>
-<h2>নবদিগন্ত সমবায় সমিতি</h2>
+<div style="text-align:center;margin-bottom:8px"><img src="{{ public_path('images/logo.jpg') }}" style="width:40px;height:40px;object-fit:contain"></div><h2>নবদিগন্ত সমবায় সমিতি</h2>
 <div><strong>Member:</strong> {{ $member->name }} ({{ $member->member_id }})</div>
 <div><strong>Year:</strong> {{ $year }}</div>
 <div style="color:#888;font-size:11px">Generated: {{ now()->format('d M Y H:i') }}</div>

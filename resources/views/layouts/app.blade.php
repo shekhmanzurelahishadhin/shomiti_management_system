@@ -8,14 +8,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        :root { --sidebar-width: 260px; --primary: #1a5276; --accent: #2e86c1; }
+        :root { --sidebar-width: 260px; --primary: #1a3a1c; --accent: #2d6a30; }
         body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
         .sidebar {
             width: var(--sidebar-width); min-height: 100vh;
-            background: var(--primary); position: fixed; top: 0; left: 0;
+            background: linear-gradient(180deg,#0d1f0f 0%,#1a3a1c 100%); position: fixed; top: 0; left: 0;
             z-index: 1000; transition: transform .3s; overflow-y: auto;
         }
-        .sidebar-brand { padding: 1.2rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,.1); }
+        .sidebar-brand { padding: 1rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,.1); }
         .sidebar-brand h5 { color: #fff; font-weight: 700; margin: 0; font-size: .95rem; }
         .sidebar-brand small { color: rgba(255,255,255,.6); font-size: .75rem; }
         .sidebar .nav-link {
@@ -56,17 +56,32 @@
 
 <div class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-        <h5><i class="bi bi-bank2 me-2"></i>নবদিগন্ত</h5>
-        <small>সমবায় সমিতি</small>
+        <div class="d-flex align-items-center gap-2">
+            <img src="{{ asset('images/logo.jpg') }}" alt="নবদিগন্ত"
+                 style="width:42px;height:42px;object-fit:contain;filter:drop-shadow(0 1px 4px rgba(0,0,0,.3))">
+            <div>
+                <div style="color:#fff;font-weight:700;font-size:.92rem;line-height:1.2">নবদিগন্ত</div>
+                <div style="color:rgba(255,255,255,.55);font-size:.7rem">সমবায় সমিতি</div>
+            </div>
+        </div>
     </div>
     <nav class="mt-2">
         <span class="nav-section">Main</span>
         <a href="{{ route('dashboard') }}" class="nav-link @active('dashboard')"><i class="bi bi-speedometer2"></i> Dashboard</a>
 
+        @if(!auth()->user()->isMemberRole())
         @can('manage members')
         <span class="nav-section">Members</span>
         <a href="{{ route('members.index') }}" class="nav-link @active('members.*')"><i class="bi bi-people"></i> Members</a>
         @endcan
+        @else
+        <span class="nav-section">আমার তথ্য</span>
+        @if(auth()->user()->member)
+        <a href="{{ route('members.show', auth()->user()->member) }}" class="nav-link @active('members.*')">
+          <i class="bi bi-person-circle"></i> আমার প্রোফাইল
+        </a>
+        @endif
+        @endif
 
         @can('generate bills')
         <span class="nav-section">Finance</span>
@@ -92,6 +107,18 @@
 
         <span class="nav-section">নির্বাচন</span>
         <a href="{{ route('elections.index') }}" class="nav-link @active('elections.*')"><i class="bi bi-person-badge"></i> কমিটি নির্বাচন</a>
+
+        @can('view investments')
+        <span class="nav-section">বিনিয়োগ</span>
+        <a href="{{ route('investments.index') }}" class="nav-link @active('investments.*')">
+          <i class="bi bi-graph-up-arrow"></i> বিনিয়োগ
+        </a>
+        @can('manage investment agenda')
+        <a href="{{ route('investments.meeting.list') }}" class="nav-link @active('investments.meetings*')">
+          <i class="bi bi-calendar-event"></i> সভার এজেন্ডা
+        </a>
+        @endcan
+        @endcan
 
         @can('view reports')
         <span class="nav-section">Analytics</span>

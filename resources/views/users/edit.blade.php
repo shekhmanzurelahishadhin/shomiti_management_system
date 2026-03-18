@@ -40,6 +40,22 @@
                 <option value="inactive" {{ $user->status=='inactive'?'selected':'' }}>Inactive</option>
               </select>
             </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">লিঙ্ক করুন সদস্য প্রোফাইল</label>
+              <select name="member_id" class="form-select">
+                <option value="">— কোনো সদস্য লিঙ্ক নেই —</option>
+                @foreach($members as $m)
+                  <option value="{{ $m->id }}" {{ $user->member_id==$m->id?'selected':'' }}>
+                    {{ $m->name }} ({{ $m->member_id }})
+                  </option>
+                @endforeach
+              </select>
+              @if($user->member)
+                <div class="form-text text-success"><i class="bi bi-check-circle me-1"></i>বর্তমানে লিঙ্কড: {{ $user->member->name }}</div>
+              @else
+                <div class="form-text text-muted">Member রোলের জন্য সদস্য প্রোফাইল লিঙ্ক করুন।</div>
+              @endif
+            </div>
           </div>
           <hr class="mt-4">
           <div class="d-flex gap-2 justify-content-end">

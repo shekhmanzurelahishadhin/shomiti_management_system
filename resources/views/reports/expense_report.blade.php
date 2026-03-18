@@ -60,7 +60,7 @@
           <td><span class="badge bg-light text-dark">{{ ucfirst($e->category) }}</span></td>
           <td class="fw-bold text-danger">৳{{ number_format($e->amount,2) }}</td>
           <td>{{ $e->expense_date->format('d M Y') }}</td>
-          <td class="text-muted small">{{ Str::limit($e->description,60) ?? '—' }}</td>
+          <td class="text-muted small">{{  \Illuminate\Support\Str::limit($e->description,60) ?? '—' }}</td>
         </tr>
       @empty
         <tr><td colspan="6" class="text-center text-muted py-4">No expenses found.</td></tr>

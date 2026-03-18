@@ -18,7 +18,7 @@
           <span class="badge badge-{{ $c->status }}">{{ ucfirst($c->status) }}</span>
         </div>
         @if($c->description)
-          <div class="text-muted small mb-2">{{ Str::limit($c->description,80) }}</div>
+          <div class="text-muted small mb-2">{{  \Illuminate\Support\Str::limit($c->description,80) }}</div>
         @endif
         <div class="d-flex gap-3 mt-3">
           <div class="text-center">

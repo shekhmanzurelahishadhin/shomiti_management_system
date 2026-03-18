@@ -21,6 +21,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage expenses',
             'view reports',
             'manage settings',
+            // Investment permissions
+            'submit investment request',   // Members
+            'manage investment agenda',    // Admin/Secretary
+            'approve investments',         // Parliamentary/Super Admin
+            'process investment payment',  // Accounts/Treasurer
+            'settle investments',          // Accounts/Treasurer
+            'view investments',            // All roles
         ];
 
         foreach ($permissions as $permission) {
@@ -32,23 +39,22 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $admin = Role::firstOrCreate(['name' => 'Admin']);
         $admin->givePermissionTo([
-            'manage members',
-            'manage committees',
-            'generate bills',
-            'collect payments',
-            'manage expenses',
-            'view reports',
+            'manage members', 'manage committees', 'generate bills',
+            'collect payments', 'manage expenses', 'view reports',
+            'submit investment request', 'manage investment agenda',
+            'approve investments', 'process investment payment',
+            'settle investments', 'view investments',
         ]);
 
         $treasurer = Role::firstOrCreate(['name' => 'Treasurer']);
         $treasurer->givePermissionTo([
-            'generate bills',
-            'collect payments',
-            'manage expenses',
-            'view reports',
+            'generate bills', 'collect payments', 'manage expenses', 'view reports',
+            'process investment payment', 'settle investments', 'view investments',
         ]);
 
         $member = Role::firstOrCreate(['name' => 'Member']);
-        $member->givePermissionTo(['view reports']);
+        $member->givePermissionTo([
+            'view reports', 'submit investment request', 'view investments',
+        ]);
     }
 }

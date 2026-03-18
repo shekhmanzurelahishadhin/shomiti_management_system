@@ -13,6 +13,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\ElectionController;
+use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -112,6 +113,83 @@ Route::middleware('auth')->group(function () {
         Route::post('withdrawals/{withdrawal}/reject',      [WithdrawalController::class, 'reject'])->name('withdrawals.reject');
         Route::post('withdrawals/{withdrawal}/repayment',   [WithdrawalController::class, 'recordRepayment'])->name('withdrawals.repayment');
         Route::post('withdrawals/{withdrawal}/mark-repaid', [WithdrawalController::class, 'markFullyRepaid'])->name('withdrawals.mark-repaid');
+    });
+
+    // ─── Investment Module ──────────────────────────────────────────────
+    // NOTE: Static routes MUST come before parameterized /{investment} routes
+    Route::prefix('investments')->name('investments.')->middleware('permission:view investments')->group(function () {
+
+        // ── Index ──────────────────────────────────────────────────────
+        Route::get('/', [InvestmentController::class, 'index'])->name('index');
+
+        // ── Static named routes (BEFORE /{investment} wildcard) ────────
+        Route::get('/create', [InvestmentController::class, 'create'])
+             ->middleware('permission:submit investment request')->name('create');
+        Route::post('/', [InvestmentController::class, 'store'])
+             ->middleware('permission:submit investment request')->name('store');
+
+        // Maturity check
+        Route::post('/check-maturities', [InvestmentController::class, 'checkMaturities'])
+             ->middleware('permission:process investment payment')->name('check-maturities');
+
+        // ── Meeting sub-routes ─────────────────────────────────────────
+        Route::prefix('meetings')->name('meeting.')->middleware('permission:manage investment agenda')->group(function () {
+            Route::get('/all',            [InvestmentController::class, 'meetings'])->name('list');
+            Route::post('/',              [InvestmentController::class, 'storeMeeting'])->name('store');
+            Route::get('/{meeting}',      [InvestmentController::class, 'showMeeting'])->name('show');
+            Route::post('/{meeting}/add', [InvestmentController::class, 'addToMeeting'])->name('add');
+            Route::post('/{meeting}/status', [InvestmentController::class, 'updateMeetingStatus'])->name('status');
+        });
+
+        // ── Payment vouchers ───────────────────────────────────────────
+        Route::prefix('payments')->name('voucher.')->middleware('permission:process investment payment')->group(function () {
+            Route::get('/{payment}/view', [InvestmentController::class, 'voucher'])->name('view');
+            Route::get('/{payment}/pdf',  [InvestmentController::class, 'voucherPdf'])->name('pdf');
+        });
+
+        // ── Settlement vouchers ────────────────────────────────────────
+        Route::prefix('settlements')->name('settlement.')->middleware('permission:settle investments')->group(function () {
+            Route::get('/{settlement}/voucher',     [InvestmentController::class, 'settlementVoucher'])->name('voucher');
+            Route::get('/{settlement}/voucher-pdf', [InvestmentController::class, 'settlementVoucherPdf'])->name('voucher.pdf');
+        });
+
+        // ── Reports ────────────────────────────────────────────────────
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/',            [InvestmentController::class, 'reports'])->name('index');
+            Route::get('/requests',    [InvestmentController::class, 'reportRequests'])->name('requests');
+            Route::get('/active',      [InvestmentController::class, 'reportActive'])->name('active');
+            Route::get('/maturity',    [InvestmentController::class, 'reportMaturity'])->name('maturity');
+            Route::get('/ledger',      [InvestmentController::class, 'reportMemberLedger'])->name('ledger');
+            Route::get('/profit-loss', [InvestmentController::class, 'reportProfitLoss'])->name('profitloss');
+            Route::get('/settlements', [InvestmentController::class, 'reportSettlements'])->name('settlements');
+            Route::get('/payments',    [InvestmentController::class, 'reportPayments'])->name('payments');
+        });
+
+        // ── Parameterized routes — MUST come AFTER all static routes ───
+        Route::get('/{investment}',    [InvestmentController::class, 'show'])->name('show');
+        Route::get('/{investment}/edit', [InvestmentController::class, 'edit'])
+             ->middleware('permission:submit investment request')->name('edit');
+        Route::put('/{investment}',    [InvestmentController::class, 'update'])
+             ->middleware('permission:submit investment request')->name('update');
+        Route::delete('/{investment}', [InvestmentController::class, 'destroy'])
+             ->middleware('permission:submit investment request')->name('destroy');
+
+        Route::post('/{investment}/approve', [InvestmentController::class, 'approve'])
+             ->middleware('permission:approve investments')->name('approve');
+        Route::post('/{investment}/reject',  [InvestmentController::class, 'reject'])
+             ->middleware('permission:approve investments')->name('reject');
+        Route::post('/{investment}/modify',  [InvestmentController::class, 'requestModification'])
+             ->middleware('permission:approve investments')->name('modify');
+
+        Route::get('/{investment}/payment',  [InvestmentController::class, 'paymentForm'])
+             ->middleware('permission:process investment payment')->name('payment');
+        Route::post('/{investment}/payment', [InvestmentController::class, 'processPayment'])
+             ->middleware('permission:process investment payment')->name('payment.process');
+
+        Route::get('/{investment}/settlement',  [InvestmentController::class, 'settlementForm'])
+             ->middleware('permission:settle investments')->name('settlement');
+        Route::post('/{investment}/settlement', [InvestmentController::class, 'processSettlement'])
+             ->middleware('permission:settle investments')->name('settlement.process');
     });
 
     // Elections & Voting

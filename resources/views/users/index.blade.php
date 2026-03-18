@@ -42,7 +42,7 @@
 
         {{-- Reset Password Modal --}}
         <div class="modal fade" id="resetModal{{ $user->id }}" tabindex="-1">
-          <div class="modal-dialog">
+          <div class="modal-dialog bg-white border-rounded-lg">
             <form method="POST" action="{{ route('users.reset-password',$user) }}" class="modal-content">
               @csrf
               <div class="modal-header">

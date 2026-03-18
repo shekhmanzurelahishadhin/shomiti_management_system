@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Member;
 use Illuminate\Support\Facades\Hash;
 
 class UsersSeeder extends Seeder
@@ -28,10 +29,23 @@ class UsersSeeder extends Seeder
         );
         $treasurer->assignRole('Treasurer');
 
-        $member = User::firstOrCreate(
+        // Member user — linked to first actual member record
+        $firstMember = Member::orderBy('id')->first();
+        $memberUser  = User::firstOrCreate(
             ['email' => 'member@nabadiganta.com'],
-            ['name' => 'Member User', 'password' => Hash::make('password'), 'status' => 'active', 'phone' => '01700000003']
+            [
+                'name'      => $firstMember ? $firstMember->name : 'Member User',
+                'password'  => Hash::make('password'),
+                'status'    => 'active',
+                'phone'     => '01700000003',
+                'member_id' => $firstMember?->id,
+            ]
         );
-        $member->assignRole('Member');
+        $memberUser->assignRole('Member');
+
+        // If member already existed but has no member_id, update it
+        if (!$memberUser->member_id && $firstMember) {
+            $memberUser->update(['member_id' => $firstMember->id]);
+        }
     }
 }

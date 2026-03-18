@@ -77,6 +77,56 @@
         </div>
     </div>
     @endif
+
+{{-- Investment summary row --}}
+@can('view investments')
+<div class="row g-3 mb-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header py-2 fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-graph-up-arrow me-2 text-success"></i>বিনিয়োগ সারসংক্ষেপ</span>
+        <a href="{{ route('investments.index') }}" class="btn btn-sm btn-outline-success">সব দেখুন</a>
+      </div>
+      <div class="card-body py-2">
+        <div class="row text-center g-2">
+          <div class="col-6 col-md-3">
+            <div class="text-muted small">বিবেচনাধীন আবেদন</div>
+            <div class="fs-5 fw-bold text-warning">{{ $pendingInvestments }}</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="text-muted small">সক্রিয় বিনিয়োগ</div>
+            <div class="fs-5 fw-bold text-success">{{ $activeInvestments }}</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="text-muted small">মোট বিনিয়োগকৃত</div>
+            <div class="fs-5 fw-bold text-primary">৳{{ number_format($activeInvestAmount,0) }}</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="text-muted small">মেয়াদ শেষ (নিষ্পত্তি বাকি)</div>
+            <div class="fs-5 fw-bold {{ $maturedInvestments>0?'text-danger':'text-muted' }}">{{ $maturedInvestments }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+@if($maturedInvestments > 0)
+<div class="alert alert-warning py-2 d-flex justify-content-between align-items-center mb-3">
+  <span><i class="bi bi-alarm me-2"></i><strong>{{ $maturedInvestments }}টি</strong> বিনিয়োগের মেয়াদ শেষ — নিষ্পত্তির অপেক্ষায়</span>
+  <a href="{{ route('investments.index', ['status'=>'matured']) }}" class="btn btn-warning btn-sm">নিষ্পত্তি করুন</a>
+</div>
+@endif
+@if($pendingInvestments > 0)
+@can('manage investment agenda')
+<div class="alert alert-info py-2 d-flex justify-content-between align-items-center mb-3">
+  <span><i class="bi bi-file-earmark-text me-2"></i><strong>{{ $pendingInvestments }}টি</strong> বিনিয়োগ আবেদন সভার জন্য অপেক্ষায়</span>
+  <a href="{{ route('investments.meeting.list') }}" class="btn btn-info btn-sm text-white">এজেন্ডায় যোগ করুন</a>
+</div>
+@endcan
+@endif
+@endcan
+
+
     <div class="col-6 col-lg-3">
         <div class="card p-3">
             <div class="text-muted small">Today</div>
